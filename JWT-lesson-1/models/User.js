@@ -22,12 +22,23 @@ const userSchema = new mongoose.Schema
 
 
 userSchema.pre('save', async function(next){
-    const salt = await bcrypt.genSalt();
-    this.password = await bcrypt.hash(this.password, salt)
-    
-    next();
-})
-
+    const saltRounds = 10; //this was later from JWT video 6 
+    if (this.isModified('password0')){
+        try {
+            const salt = await bcrypt.genSalt(saltRounds);
+            this.password = await bcrypt.hash(this.password, salt)
+            next();
+        }
+        catch (error) {
+            console.error('Error hashing password: ', error);
+            next(error);
+        }
+    } else {
+        next();
+    }
+});
+   
+  
 
 const User = mongoose.model('user', userSchema);
 
